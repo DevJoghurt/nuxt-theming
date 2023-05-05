@@ -1,8 +1,10 @@
 import type { ThemeTypes, ThemeConfigs, Themes } from '#build/types/theme'
 
 type DeepPartial<T> = {
-  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
-}
+  [P in keyof T]?: T[P] extends object
+    ? DeepPartial<T[P]> & Partial<T[P]>
+    : T[P];
+};
 
 type ThemeOptions = {
   variation?: Themes
@@ -15,8 +17,8 @@ type UseThemeOptions<T extends ThemeTypes> = {
       base?: DeepPartial<ThemeConfigs[T]['base']>
       defaults?: DeepPartial<ThemeConfigs[T]['base']>
       variants?: DeepPartial<ThemeConfigs[T]['variants']>
-      props?: {
-        [P in keyof NonNullable<ThemeConfigs[T]["props"]>]: DeepPartial<Record<keyof NonNullable<ThemeConfigs[T]["props"][P]>, string>>
+      options?: {
+        [P in keyof NonNullable<ThemeConfigs[T]["options"]>]: DeepPartial<Record<keyof NonNullable<ThemeConfigs[T]["options"][P]>, string>>
       }
     }
 }

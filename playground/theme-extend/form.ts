@@ -10,9 +10,7 @@ export default defineTheme<Form>({
     variants: {
 
     },
-    props: {
-        size: {
-            
-        }
+    options: {
+
     }
 })

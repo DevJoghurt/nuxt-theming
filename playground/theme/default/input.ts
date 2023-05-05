@@ -1,7 +1,7 @@
 type InputTheme = {
     classes: 'base' | 'text'
     variants: 'error' | 'success'
-    props: {
+    options: {
         size: {
             sm: string
             lg: string
@@ -24,7 +24,7 @@ export default defineTheme<InputTheme>({
             text: 'text-base leading-6 text-red-600'
         }
     },
-    props: {
+    options: {
         size: {
             lg: 'text-lg leading-6'
         }

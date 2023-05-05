@@ -1,22 +1,24 @@
 
 type DeepPartial<T> = {
-  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
-}
+  [P in keyof T]?: T[P] extends object
+    ? DeepPartial<T[P]> & Partial<T[P]>
+    : T[P];
+};
 
 type Base = {
   classes: string
   variants?: string
-  props?: {
+  options?: {
     [key: string]: Record<string, string>
   }
 }
 
 interface Theme<T extends Base> {
-  base: DeepPartial<Record<T["classes"], string>>;
-  defaults?: DeepPartial<Record<T["classes"], string>>;
-  variants?: DeepPartial<Record<NonNullable<T["variants"]>, Record<T["classes"], string>>>;
-  props: {
-    [P in keyof T["props"]]: DeepPartial<Record<keyof NonNullable<T["props"][P]>, string>>
+  base: DeepPartial<Record<T["classes"], string>>
+  defaults?: DeepPartial<Record<T["classes"], string>>
+  variants?: DeepPartial<Record<NonNullable<T["variants"]>, Record<T["classes"], string>>>
+  options: {
+    [P in keyof T["options"]]: DeepPartial<Record<keyof NonNullable<T["options"][P]>, string>>
   };
 }
 

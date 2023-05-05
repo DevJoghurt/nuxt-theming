@@ -1,7 +1,7 @@
 type ButtonTheme = {
     classes: 'button' | 'hover'
     variants: 'error' | 'success' | 'warning'
-    props: {
+    options: {
         size: {
             sm: string,
             md: string,
@@ -26,7 +26,8 @@ export default defineTheme<ButtonTheme>({
 
         }
     },
-    props: {
+    options: {
+        color: {},
         size: {}
     }
 })

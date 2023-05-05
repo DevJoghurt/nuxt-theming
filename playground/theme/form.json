@@ -7,7 +7,7 @@
             "container": "text-sm text-red-500"
         }
     },
-    "props": {
+    "options": {
         "size": {
             "xs": "text-xs"
         }

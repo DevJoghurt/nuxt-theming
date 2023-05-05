@@ -8,12 +8,12 @@ export default defineTheme<Input>({
         base: 'text',
         text: 'text-base leading-6 text-gray-900'
     },
-    variants: {
+    variants: {  
         error: {
-            base: 'text-base leading-6 text-red-600',
+            base: 'border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500',
         }
     },
-    props: {
+    options: {
         size: {
         
         }

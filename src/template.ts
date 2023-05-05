@@ -19,8 +19,8 @@ ${config.map((c) => `type ${c.name.charAt(0).toUpperCase() + c.name.slice(1)}Con
 ${config.map((c) => `export type ${c.name.charAt(0).toUpperCase() + c.name.slice(1)} = { 
   classes: Extract<keyof ${c.name.charAt(0).toUpperCase() + c.name.slice(1)}Config["base"], string>
   variants: Extract<keyof NonNullable<${c.name.charAt(0).toUpperCase() + c.name.slice(1)}Config["variants"]>, string>
-  props: {
-    [P in keyof NonNullable<${c.name.charAt(0).toUpperCase() + c.name.slice(1)}Config["props"]>]?: Record<keyof NonNullable<${c.name.charAt(0).toUpperCase() + c.name.slice(1)}Config["props"][P]>, string>
+  options: {
+    [P in keyof NonNullable<${c.name.charAt(0).toUpperCase() + c.name.slice(1)}Config["options"]>]?: Record<keyof NonNullable<${c.name.charAt(0).toUpperCase() + c.name.slice(1)}Config["options"][P]>, string>
   }
 }`).join('\n')}
 export type ThemeConfigs = {

@@ -4,21 +4,15 @@
   </div>
 </template>
 <script setup lang="ts">
- const { classes } = useTheme('input', {
+  const { classes } = useTheme('input', {
     theme: {
-      variation: 'admin'
+      variation: "defaultTheme"
     },
-    variant: 'error',
     overwrite: {
-      base: {
-
-      },
       options: {
-        size: {
-          
-        }
+        size: {}
       }
     }
- })
+  })
   console.log(classes('base'))
 </script>

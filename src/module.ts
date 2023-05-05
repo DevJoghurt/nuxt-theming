@@ -92,6 +92,5 @@ export default defineNuxtModule<ModuleOptions>({
       name: 'useTheme',
       from: resolver.resolve('./runtime/composables/useTheme')
     }])
-
   }
 })

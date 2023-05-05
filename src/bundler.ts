@@ -27,12 +27,13 @@ const ThemeImportPlugin = createUnplugin((options: ThemeImportOptions, meta) => 
           }
 
           let autoImportAdded = false as boolean;
-
-          const updatedCode = code.replace(/useTheme\(([^,]+)(?:,\s*({(?:[^{}]+|{(?:[^{}]+|{[^{}]*})*}|'[^']*'|"[^"]*"|`[^`]*`)*}))?\)/g, (match, arg1, arg2) => {
+          const updatedCode = code.replace(
+            /useTheme\(([^,]*?)(?:,\s*({(?:[^{}]*|\{(?:[^{}]*|\{(?:[^{}]*|\{[^{}]*\})*\})*\})*}))?\)/g, 
+            (match, arg1, arg2) => {
+              console.log(arg1, arg2)
             const phrase = arg1.slice(1, -1)
             if(options.allowedTypes.includes(phrase)){
               autoImportAdded = true
-              console.log(`useTheme('${phrase}'${arg2 ? ', ' + arg2.trim() : ',{} '}, ${phrase}Theme)`)
               return `useTheme('${phrase}'${arg2 ? ', ' + arg2.trim() : ',{} '}, ${phrase}Theme)`
             }else{
               return match

@@ -1,0 +1,6 @@
+{
+    "base": {
+        "button": "bg-red-500 text-admin",
+        "hover": "hover:bg-red-600 admin"
+    }
+}

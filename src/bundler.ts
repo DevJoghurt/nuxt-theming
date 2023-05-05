@@ -1,34 +1,39 @@
 import { createUnplugin } from 'unplugin'
 import { addVitePlugin } from '@nuxt/kit'
 
-import type { TextsConfig, TextsImportOptions } from './types'
+import type { ThemeConfig } from './types'
 
-export async function extendBundler(textsConfig: TextsConfig[]) {
+type ThemeImportOptions = {
+  allowedTypes: string[]
+}
+
+export async function extendBundler(textsConfig: ThemeConfig[]) {
     //create array of allowed types for useTexts
     const allowedTypes = textsConfig.map((config) => {
       return config.name
     })  
-    addVitePlugin(TextsImportPlugin.vite({
+    addVitePlugin(ThemeImportPlugin.vite({
       allowedTypes: allowedTypes
     }))
 }
 
-const TextsImportPlugin = createUnplugin((options: TextsImportOptions, meta) => {
+const ThemeImportPlugin = createUnplugin((options: ThemeImportOptions, meta) => {
     return {
-        name: 'texts-import',
+        name: 'theme-import',
         enforce: 'pre',
         async transform(code, id) {
-          if (!code.includes('useTexts')) {
+          if (!code.includes('useTheme')) {
               return null;
           }
 
           let autoImportAdded = false as boolean;
 
-          const updatedCode = code.replace(/useTexts\(((?:[^,'"`\(\)]|`[^`]*`|'[^']*'|"[^"]*")*)(?:,\s*({(?:[^{}'`"\(\)]|`[^`]*`|'[^']*'|"[^"]*")*}))?\)/g, (match, arg1, arg2) => {
+          const updatedCode = code.replace(/useTheme\(([^,]+)(?:,\s*({(?:[^{}]+|{(?:[^{}]+|{[^{}]*})*}|'[^']*'|"[^"]*"|`[^`]*`)*}))?\)/g, (match, arg1, arg2) => {
             const phrase = arg1.slice(1, -1)
             if(options.allowedTypes.includes(phrase)){
               autoImportAdded = true
-              return `useTexts('${phrase}', ${phrase}Texts${arg2 ? ', ' + arg2.trim() : ''})`
+              console.log(`useTheme('${phrase}'${arg2 ? ', ' + arg2.trim() : ',{} '}, ${phrase}Theme)`)
+              return `useTheme('${phrase}'${arg2 ? ', ' + arg2.trim() : ',{} '}, ${phrase}Theme)`
             }else{
               return match
             }

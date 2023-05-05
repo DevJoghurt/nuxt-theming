@@ -1,0 +1,15 @@
+{
+    "base": {
+        "container": "text-sm text-gray-500"
+    },
+    "variants": {
+        "error": {
+            "container": "text-sm text-red-500"
+        }
+    },
+    "props": {
+        "size": {
+            "xs": "text-xs"
+        }
+    }
+}

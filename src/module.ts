@@ -1,32 +1,33 @@
-import { defineNuxtModule, addPlugin, createResolver } from '@nuxt/kit'
-import { scanThemeFiles, createThemeConfig } from './utils'
-import type { ThemeConfig } from './types'
+import { defineNuxtModule, createResolver, addImports } from '@nuxt/kit'
+import { scanThemeFiles, createThemeConfig, orderThemeDirsByPriority} from './utils'
+import { writeTypes, writeTemplates } from './template' 
+import { resolve } from 'path'
+import { extendBundler } from './bundler'
+import type { ModuleOptions, ThemeConfig, ThemeDir } from './types'
 
-// Module options TypeScript interface definition
-export interface ModuleOptions {
-  dir: string
-}
-
-type ThemeDir = {
-  cwd: string
-  dir: string
-}  
 
 export default defineNuxtModule<ModuleOptions>({
   meta: {
     name: 'nuxt-theming',
-    configKey: 'theme'
+    configKey: 'theming'
   },
   // Default configuration options of the Nuxt module
   defaults: {
-    dir: 'theme'
+    dir: 'theme',
+    variations: [],
+    layers: {
+      overwriteTypes: false,
+      priority: 0
+    }
   },
   async setup (options, nuxt) {
     const resolver = createResolver(import.meta.url)
 
 
     const themeConfig = [] as ThemeConfig[]
-    const themeDirs = [] as ThemeDir[]
+    let themeDirs = [] as ThemeDir[]
+
+    nuxt.options.alias['#theme'] = `${nuxt.options.buildDir}/types/theme`
 
     // Support `extends` directories
     if (nuxt.options._layers && nuxt.options._layers.length > 1) {
@@ -43,19 +44,24 @@ export default defineNuxtModule<ModuleOptions>({
       for (const layer of layers) {
         themeDirs.push({
           cwd: layer.cwd,
-          dir: layer.config.theme?.dir || options.dir
+          dir: layer.config.theme?.dir || options.dir,
+          priority: layer.config.theme?.layers?.priority || 0
         })
       }
     }else{
       themeDirs.push({
         cwd: nuxt.options.rootDir,
-        dir: options.dir
+        dir: options.dir,
+        priority: options.layers?.priority || 0
       })
     }
 
     // Allow extending themes config config by other modules - they will be prepended
     // @ts-ignore
     await nuxt.callHook('theme:extend', themeDirs)
+
+    //order themeDirs, if priority is highest it should be first -> this is important for handling types correctly
+    themeDirs = orderThemeDirsByPriority(themeDirs)
 
     // create themes config
     for (const themeDir of themeDirs) {
@@ -64,8 +70,28 @@ export default defineNuxtModule<ModuleOptions>({
       createThemeConfig(themeConfig, files)
     }
 
+    writeTypes(themeConfig, options)
+    writeTemplates(themeConfig, options)
 
-    // Do not add the extension since the `.ts` will be transpiled to `.mjs` after `npm run prepack`
-    addPlugin(resolver.resolve('./runtime/plugin'))
+    // add theme imports to nuxt
+    for(const c of themeConfig){
+      addImports([{
+        from: resolve(nuxt.options.buildDir, `theme/${c.name}`),
+        as: `${c.name}Theme`,
+        name: 'default',
+        priority: 100
+      }])
+    }
+
+    extendBundler(themeConfig)
+
+    addImports([{
+      name: 'defineTheme',
+      from: resolver.resolve('./runtime/composables/defineTheme')
+    },{
+      name: 'useTheme',
+      from: resolver.resolve('./runtime/composables/useTheme')
+    }])
+
   }
 })

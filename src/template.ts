@@ -1,43 +1,55 @@
 import { addTemplate } from '@nuxt/kit'
 import type { NuxtTemplate } from '@nuxt/schema'
 import { resolvePath } from 'mlly'
-import type { TextsConfig, LanguageCode } from './types'
+import type { ThemeConfig, ModuleOptions } from './types'
 
-  export function writeTypes(config: TextsConfig[], locales: LanguageCode[]){
+  export function writeTypes(config: ThemeConfig[], options: ModuleOptions){
+    const { variations = [], layers = {} } = options
+    const { overwriteTypes = false } = layers
+
     // write text types
     const template: NuxtTemplate = {
-      filename: `types/texts.d.ts`,
+      filename: `types/theme.d.ts`,
       getContents: async () => {
         return `import type { Defu } from 'defu'
-export type LanguageCode = ${locales.map((l) => `'${l}'`).join(' | ')}
-export type TextTypes = ${config.length > 0 ? config.map((c) => `'${c.name}'` ).join(' | ') : 'empty'}
-${config.map((c) => c.paths.map((file, index) => `import ${`l${index}_${c.name}`} from '${file}'`).join('\n')).join('\n')}
-${config.map((c) => `export type ${c.name} = Defu<typeof l0_${c.name}, [${c.paths.slice(1).map((file, index) => `typeof l${index+1}_${c.name}`).join(', ')}]>`).join('\n')}
-export type ResolvedTexts = {
-  ${config.length > 0 ? config.map((c) => `${c.name}: ${c.name}`).join('\n') : 'empty: \'\''}
-}`
+export type Themes = 'defaultTheme'${ variations.length > 0 ? ' |' : ''  } ${variations.length > 0 ? variations.map((name) => `'${name}'` ).join(' | ') : ''}
+export type ThemeTypes = ${config.length > 0 ? config.map((c) => `'${c.name}'` ).join(' | ') : 'empty'}
+${config.map((c) => c.files.filter((file, index) => (overwriteTypes || (!overwriteTypes && index === 0))).map((file, index) => `import ${`l${index}_${c.name}`} from '${file.path}'`).join('\n')).join('\n')}
+${config.map((c) => `type ${c.name.charAt(0).toUpperCase() + c.name.slice(1)}Config = Defu<typeof l0_${c.name}, [${c.files.slice(1).filter((file, index) => (overwriteTypes || (!overwriteTypes && index > 0))).map((file, index) => `typeof l${index+1}_${c.name}`).join(', ')}]>`).join('\n')}
+${config.map((c) => `export type ${c.name.charAt(0).toUpperCase() + c.name.slice(1)} = { 
+  classes: Extract<keyof ${c.name.charAt(0).toUpperCase() + c.name.slice(1)}Config["base"], string>
+  variants: Extract<keyof NonNullable<${c.name.charAt(0).toUpperCase() + c.name.slice(1)}Config["variants"]>, string>
+  props: {
+    [P in keyof NonNullable<${c.name.charAt(0).toUpperCase() + c.name.slice(1)}Config["props"]>]?: Record<keyof NonNullable<${c.name.charAt(0).toUpperCase() + c.name.slice(1)}Config["props"][P]>, string>
+  }
+}`).join('\n')}
+export type ThemeConfigs = {
+  ${config.length > 0 ? config.map((c) => `${c.name}: ${c.name.charAt(0).toUpperCase() + c.name.slice(1)}Config`).join('\n') : 'empty: \'\''}
+}
+`
       }
     }
     addTemplate(template)
   }
 
-  export function writeTemplates(config: TextsConfig[], textsDefaultLocale: LanguageCode){
+  export function writeTemplates(config: ThemeConfig[], options: ModuleOptions){
+    const { variations = [] } = options
     // write config
     for(const c of config){
       const template: NuxtTemplate = {
-        filename: `texts/${c.name}.ts`,
+        filename: `theme/${c.name}.ts`,
         write: true,
         getContents: async () => {
           return `import { defu } from '${await _resolveId('defu')}'
-${c.paths.map((file, index) => `import ${`l${index}_${c.name}_default`} from '${file}'`).join('\n')}
-${c.locales.map((locale) => locale.paths.map((file, index) => `import ${`l${index}_${c.name}_${locale.languageCode}`} from '${file}'`).join('\n')).join('\n')}
-const defaultTexts = defu(${c.paths.map((file, index) => `l${index}_${c.name}_default`).join(', ')})
-${c.locales.map((locale) => `const ${locale.languageCode} = defu(${locale.paths.map((file, index) => `l${index}_${c.name}_${locale.languageCode}`).join(', ')}, defaultTexts)`).join('\n')}
-const texts = {
-  '${textsDefaultLocale}': defaultTexts
+${c.files.map((file, index) => `import ${`l${index}_${c.name}_default`} from '${file.path}'`).join('\n')}
+${c.themes.filter((theme) => (variations.indexOf(theme.name) !== -1)).map((theme) => theme.files.map((file, index) => `import ${`l${index}_${c.name}_${theme.name}`} from '${file.path}'`).join('\n')).join('\n')}
+const defaultTheme = defu(${c.files.map((file, index) => `l${index}_${c.name}_default`).join(', ')})
+${c.themes.filter((theme) => (variations.indexOf(theme.name) !== -1)).map((theme) => `const ${theme.name} = defu(${theme.files.map((file, index) => `l${index}_${c.name}_${theme.name}`).join(', ')}, defaultTheme)`).join('\n')}
+const themes = {
+  defaultTheme
 }
-${c.locales.map((locale) => `texts['${locale.languageCode}'] = ${locale.languageCode}`).join('\n')}
-export default texts`
+${c.themes.filter((theme) => (variations.indexOf(theme.name) !== -1)).map((theme) => `themes['${theme.name}'] = ${theme.name}`).join('\n')}
+export default themes`
         }
       }
       addTemplate(template)

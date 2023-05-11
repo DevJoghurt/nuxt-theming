@@ -12,6 +12,11 @@ import type { ThemeConfig, ModuleOptions } from './types'
       filename: `types/theme.d.ts`,
       getContents: async () => {
         return `import type { Defu } from 'defu'
+export type DeepPartial<T> = {
+  [P in keyof T]?: T[P] extends object
+    ? DeepPartial<T[P]> & Partial<T[P]>
+    : T[P];
+};
 export type Themes = 'defaultTheme'${ variations.length > 0 ? ' |' : ''  } ${variations.length > 0 ? variations.map((name) => `'${name}'` ).join(' | ') : ''}
 export type ThemeTypes = ${config.length > 0 ? config.map((c) => `'${c.name}'` ).join(' | ') : 'empty'}
 ${config.map((c) => c.files.filter((file, index) => (overwriteTypes || (!overwriteTypes && index === 0))).map((file, index) => `import ${`l${index}_${c.name}`} from '${file.path}'`).join('\n')).join('\n')}

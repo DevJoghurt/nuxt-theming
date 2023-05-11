@@ -13,7 +13,7 @@ type Base = {
   }
 }
 
-interface Theme<T extends Base> {
+export interface Theme<T extends Base> {
   base: DeepPartial<Record<T["classes"], string>>
   defaults?: DeepPartial<Record<T["classes"], string>>
   variants?: DeepPartial<Record<NonNullable<T["variants"]>, Record<T["classes"], string>>>

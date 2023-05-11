@@ -30,7 +30,6 @@ const ThemeImportPlugin = createUnplugin((options: ThemeImportOptions, meta) => 
           const updatedCode = code.replace(
             /useTheme\(([^,]*?)(?:,\s*({(?:[^{}]*|\{(?:[^{}]*|\{(?:[^{}]*|\{[^{}]*\})*\})*\})*}))?\)/g, 
             (match, arg1, arg2) => {
-              console.log(arg1, arg2)
             const phrase = arg1.slice(1, -1)
             if(options.allowedTypes.includes(phrase)){
               autoImportAdded = true

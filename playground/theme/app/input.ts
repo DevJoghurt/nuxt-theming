@@ -13,9 +13,5 @@ export default defineTheme<Input>({
             base: 'border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500',
         }
     },
-    options: {
-        size: {
-        
-        }
-    }
+    options: {}
 })

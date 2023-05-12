@@ -1,6 +1,6 @@
 {
   "name": "nuxt-theming",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Class based theming with nuxt",
   "repository": "@disedia/nuxt-theming",
   "license": "MIT",
@@ -11,7 +11,7 @@
       "import": "./dist/module.mjs",
       "require": "./dist/module.cjs"
     },
-    "composables": {
+    "./composables": {
       "types": "./dist/runtime/composables/index.d.ts",
       "import": "./dist/runtime/composables/index.mjs"
     }

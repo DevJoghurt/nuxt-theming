@@ -33,7 +33,7 @@ export type ButtonTheme = {
 
 export default defineTheme<ButtonTheme>({
     base: {
-        button: 'block justify-center inline-flex items-center cursor-pointer whitespace-nowrap',
+        button: 'block justify-center inline-flex items-center cursor-pointer whitespace-nowrap rounded px-2 py-1',
         container: 'flex items-center space-x-1',
         spinner: '-ml-1 mr-1 h-4 w-4 text-white',
     },

@@ -2,7 +2,7 @@ import type { Button } from '#theme'
 
 export default defineTheme<Button>({
     base: {
-        button: "bg-blue-500 text-white app"
+        button: 'block justify-center inline-flex items-center cursor-pointer whitespace-nowrap rounded px-2 py-1',
     },
     options: {}
 })

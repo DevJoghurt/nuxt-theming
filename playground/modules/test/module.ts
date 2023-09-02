@@ -12,11 +12,11 @@ export default defineNuxtModule({
     },
     async setup (options, nuxt) {
       //@ts-ignore
-        nuxt.hook('theme:extend', (textsDirs)=>{
-          textsDirs.unshift({
+        nuxt.hook('theme:extend', (themeDirs)=>{
+          themeDirs.unshift({
             cwd: nuxt.options.rootDir,
             dir: 'theme-extend',
-            default: false
+            priority: 0
           })
         })
     }

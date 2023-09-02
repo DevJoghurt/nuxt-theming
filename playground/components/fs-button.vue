@@ -68,19 +68,14 @@
     import type { Slot, VNode } from 'vue'
     import { Comment, Text } from 'vue'
     import type { ButtonConfig, Button  } from '#theme'
+    import { buttonTheme } from '#imports'
+    import { twMerge } from 'tailwind-merge'
 
     type Props = {
         as?: string
         type?: string
         variant?: Button['variants'] | null
-        overwrite?: {
-            base?: ButtonConfig['base']
-            defaults?: ButtonConfig['defaults']
-            variants?: ButtonConfig['variants']
-            options?: {
-                [P in keyof NonNullable<ButtonConfig["options"]>]: Record<keyof NonNullable<ButtonConfig["options"][P]>, string>
-            }
-        }
+        overwrite?: ButtonConfig['base']
         disabled?: boolean
         loading?: keyof ButtonConfig['options']['loading'] | boolean
         focusOnMount?: boolean
@@ -104,9 +99,24 @@
     const emit = defineEmits(['click'])
     const root = ref(null) as Ref<ComponentPublicInstance<HTMLInputElement> | null>
 
-    const { classes } = useTheme('button', {
-        variant: props.variant,
-        overwrite: props.overwrite
+    const { classes: useClasses } = useTheme('form', {
+      theme: 'app',
+      overwrite: {
+        container: 'flex items-center justify-center'
+      },
+      variant: 'error',
+      merge: twMerge
+    })
+
+    console.log(useClasses('container', {
+      size: 'xs',
+    }))
+
+    const { classes } = createTheme<Button>(buttonTheme, {
+      theme: 'default',
+      variant: props.variant,
+      overwrite: props.overwrite,
+      merge: twMerge
     })
 
     function hasSlot(slot: Slot | undefined, slotProps = {}): boolean {
@@ -134,7 +144,7 @@
         if (typeof value === 'boolean') {
             return value ? 'true' : 'false'
         }
-        return value as any
+        return value as 'true' | 'false' | undefined
     }
 
     // If it's disable, just ignore it

@@ -10,6 +10,9 @@
     <FsButton
       label="Toggle Loading"
       size="lg"
+      :overwrite="{
+        button: 'dark:bg-red-500 hover:bg-red-600'
+      }"
       @click="toggleLoading"
     />
   </div>

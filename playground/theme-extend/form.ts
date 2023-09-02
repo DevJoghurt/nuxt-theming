@@ -1,8 +1,8 @@
-import { Form} from '#theme'
+import { Form } from '#theme'
 
 export default defineTheme<Form>({
     base: {
-        container: 'extend'
+        container: 'flex flex-col space-y-4'
     },
     defaults: {
         
@@ -11,6 +11,6 @@ export default defineTheme<Form>({
 
     },
     options: {
-
+        
     }
 })

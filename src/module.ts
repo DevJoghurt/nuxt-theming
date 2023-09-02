@@ -5,6 +5,11 @@ import { resolve } from 'path'
 import { extendBundler } from './bundler'
 import type { ModuleOptions, ThemeConfig, ThemeDir } from './types'
 
+declare module '@nuxt/schema' {
+  interface NuxtHooks {
+    'theme:extend': (themeDirs: ThemeDir[]) => void;
+  }
+}
 
 export default defineNuxtModule<ModuleOptions>({
   meta: {
@@ -56,7 +61,7 @@ export default defineNuxtModule<ModuleOptions>({
       })
     }
 
-    // Allow extending themes config config by other modules - they will be prepended
+    // Allow extending themes config by other modules - they will be prepended
     // @ts-ignore
     await nuxt.callHook('theme:extend', themeDirs)
 
@@ -91,6 +96,9 @@ export default defineNuxtModule<ModuleOptions>({
     },{
       name: 'useTheme',
       from: resolver.resolve('./runtime/composables/useTheme')
+    },{
+      name: 'createTheme',
+      from: resolver.resolve('./runtime/composables/createTheme')
     }])
   }
 })

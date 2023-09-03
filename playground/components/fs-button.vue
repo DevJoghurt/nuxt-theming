@@ -2,7 +2,7 @@
   <component
     v-bind="$attrs"
     :is="props.as"
-    :class="classes('button',{
+    :class="theme('button',{
       size: props.size,
       rounded: props.rounded,
       loading: transformBoolean(props.loading),
@@ -13,7 +13,7 @@
     @click="handleClickEvent"
   >
     <div
-      :class="classes('container')"
+      :class="theme('container')"
     >
       <slot name="default">
         <!-- Loading Icon -->
@@ -22,7 +22,7 @@
             viewBox="0 0 24 24"
             width="1.2em"
             height="1.2em"
-            :class="classes('spinner')"
+            :class="theme('spinner')"
           >
             <path
               fill="currentColor"
@@ -99,7 +99,7 @@
     const emit = defineEmits(['click'])
     const root = ref(null) as Ref<ComponentPublicInstance<HTMLInputElement> | null>
 
-    const { classes: useClasses } = useTheme('form', {
+    const generateFormClasses = useTheme('form', {
       theme: 'app',
       overwrite: {
         container: 'flex items-center justify-center'
@@ -108,11 +108,11 @@
       merge: twMerge
     })
 
-    console.log(useClasses('container', {
+    console.log(generateFormClasses('container', {
       size: 'xs',
     }))
 
-    const { classes } = createTheme<Button>(buttonTheme, {
+    const theme = createTheme<Button>(buttonTheme, {
       theme: 'default',
       variant: props.variant,
       overwrite: props.overwrite,

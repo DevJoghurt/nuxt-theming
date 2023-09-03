@@ -18,21 +18,19 @@ export type ClassesOptions<T extends ThemeSchema> = {
     [P in keyof T["options"]]: DeepPartial<keyof NonNullable<T["options"][P]>>
 }
 
-export interface CreateThemeResult<T extends ThemeSchema> {
-    classes: (
+export type CreateThemeResult<T extends ThemeSchema> = (
       key: T["classes"],
       options?: ClassesOptions<T>
-    ) => string;
-}
+) => string;
 
 export function createTheme<T extends ThemeSchema>(theme: Themes<T>, themeOptions: ThemeOptions<T> = {} as ThemeOptions<T>): CreateThemeResult<T> {
     const variation = themeOptions?.theme || 'default'
     const currentTheme = theme[variation] || theme['default'] // fallback
     
-    const classes = (key: T["classes"], options: ClassesOptions<T> = {} as ClassesOptions<T>) => {
-      /**
-       * generate classes
-       */
+    /**
+    * generate classes
+    */
+    const generateClasses = (key: T["classes"], options: ClassesOptions<T> = {} as ClassesOptions<T>) => {
 
       // Add classes from base
       const baseClasses = (currentTheme.base[key] ?? "") as string
@@ -84,7 +82,5 @@ export function createTheme<T extends ThemeSchema>(theme: Themes<T>, themeOption
       return combinedClasses
     }
 
-    return {
-        classes
-    }
+    return generateClasses
 }

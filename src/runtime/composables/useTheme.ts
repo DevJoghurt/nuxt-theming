@@ -17,9 +17,5 @@ export type AutoImportedThemes<T extends ThemeTypes> = {
 export function useTheme<T extends ThemeTypes>(themeType: T, themeOptions: UseThemeOptions<T> = {} as UseThemeOptions<T>, theme: AutoImportedThemes<T> = {} as AutoImportedThemes<T>) {
     if(!themeType) throw new Error('Theme Type is required')
 
-    const { classes } = createTheme<Themes[T]>(theme, themeOptions)
-
-    return {
-        classes
-    }
+    return createTheme<Themes[T]>(theme, themeOptions)
 }

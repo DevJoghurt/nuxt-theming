@@ -5,6 +5,7 @@ export type ThemeVariation = 'default' | string
 export type ThemeOptions<T extends ThemeSchema> = {
   theme?: ThemeVariation
   variant?: T["variants"] | null
+  params?: Record<string, string>
   overwrite?: Theme<T>['base']
   merge?: (base: string, overwrite: string) => string
 }
@@ -74,7 +75,13 @@ export function createTheme<T extends ThemeSchema>(theme: Themes<T>, themeOption
         }
       }
 
-        return combinedClasses
+      if(themeOptions?.params){
+        for(const [key, value] of Object.entries(themeOptions?.params)){
+          combinedClasses = combinedClasses.replace(new RegExp(`{${key}}`, 'g'), value)
+        }
+      }
+
+      return combinedClasses
     }
 
     return {

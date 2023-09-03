@@ -36,7 +36,7 @@ export function createTheme<T extends ThemeSchema>(theme: Themes<T>, themeOption
       const baseClasses = (currentTheme.base[key] ?? "") as string
       const generatedClasses = baseClasses.split(' ')
       //Add classes from variants or defaults
-      if(themeOptions?.variant){
+      if(themeOptions?.variant && themeOptions?.variant !== 'default'){
         const themeVariants = (typeof currentTheme.variants !== 'undefined') ? currentTheme?.variants[themeOptions?.variant] : {} as Record<T["classes"], string>
         if(themeVariants && typeof themeVariants[key] !== 'undefined'){
           const variantClasses = (themeVariants[key] ?? '').split(' ')

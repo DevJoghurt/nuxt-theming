@@ -23,7 +23,7 @@ ${config.map((c) => c.files.filter((file, index) => (overwriteTypes || (!overwri
 ${config.map((c) => `export type ${c.name.charAt(0).toUpperCase() + c.name.slice(1)}Config = Defu<typeof l0_${c.name}, [${c.files.slice(1).filter((file, index) => (overwriteTypes || (!overwriteTypes && index > 0))).map((file, index) => `typeof l${index+1}_${c.name}`).join(', ')}]>`).join('\n')}
 ${config.map((c) => `export type ${c.name.charAt(0).toUpperCase() + c.name.slice(1)} = { 
   classes: Extract<keyof ${c.name.charAt(0).toUpperCase() + c.name.slice(1)}Config["base"], string>
-  variants: Extract<keyof NonNullable<${c.name.charAt(0).toUpperCase() + c.name.slice(1)}Config["variants"]>, string>
+  variants: Extract<keyof NonNullable<${c.name.charAt(0).toUpperCase() + c.name.slice(1)}Config["variants"]>, string> | 'default'
   options: {
     [P in keyof NonNullable<${c.name.charAt(0).toUpperCase() + c.name.slice(1)}Config["options"]>]?: Record<keyof NonNullable<${c.name.charAt(0).toUpperCase() + c.name.slice(1)}Config["options"][P]>, string>
   }

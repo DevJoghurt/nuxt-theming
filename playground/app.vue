@@ -18,10 +18,20 @@
   </div>
 </template>
 <script setup lang="ts">
+  import type { Button } from '#theme'
+  import { buttonTheme } from '#imports'
 
   const loading = ref(false)
 
   const toggleLoading = () => {
     loading.value = !loading.value
   }
+
+  const theme = createTheme<Button>(buttonTheme,{
+  })
+
+  theme('button', {
+    
+  })
+
 </script>

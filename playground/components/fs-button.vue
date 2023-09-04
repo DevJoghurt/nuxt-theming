@@ -112,12 +112,13 @@
       size: 'xs',
     }))
 
-    const theme = createTheme<Button>(buttonTheme, {
+    const theme = computed(()=>createTheme<Button>(buttonTheme, {
       theme: 'default',
       variant: props.variant,
       overwrite: props.overwrite,
       merge: twMerge
-    })
+    }))
+
 
     function hasSlot(slot: Slot | undefined, slotProps = {}): boolean {
         if (!slot)

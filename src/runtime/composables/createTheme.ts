@@ -5,7 +5,7 @@ export type ThemeVariation = 'default' | string
 export type ThemeOptions<T extends ThemeSchema> = {
   theme?: ThemeVariation
   variant?: T["variants"] | null
-  params?: Record<string, string>
+  params?: Record<string, string | undefined>
   overwrite?: Theme<T>['base']
   merge?: (base: string, overwrite: string) => string
 }
@@ -64,7 +64,7 @@ export function createTheme<T extends ThemeSchema>(theme: Themes<T>, themeOption
       let combinedClasses = generatedClasses.join(' ')
 
       // overwrite classes
-      if(typeof themeOptions.overwrite !== "undefined" && typeof themeOptions.overwrite[key] !== 'undefined'){
+      if(themeOptions?.overwrite && typeof themeOptions?.overwrite[key] !== 'undefined'){
         const overwriteClasses = themeOptions.overwrite[key] as string
         if(overwriteClasses !== '' && themeOptions?.merge && typeof themeOptions.merge === 'function'){
           combinedClasses = themeOptions.merge(combinedClasses, overwriteClasses)
@@ -75,7 +75,7 @@ export function createTheme<T extends ThemeSchema>(theme: Themes<T>, themeOption
 
       if(themeOptions?.params){
         for(const [key, value] of Object.entries(themeOptions?.params)){
-          combinedClasses = combinedClasses.replace(new RegExp(`{${key}}`, 'g'), value)
+          if(value) combinedClasses = combinedClasses.replace(new RegExp(`{${key}}`, 'g'), value)
         }
       }
 

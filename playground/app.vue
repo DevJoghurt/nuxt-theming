@@ -30,8 +30,8 @@
   const theme = createTheme<Button>(buttonTheme,{
   })
 
-  theme('button', {
-    
-  })
+  const testTheme = useTheme('button')
+
+  testTheme('button')
 
 </script>

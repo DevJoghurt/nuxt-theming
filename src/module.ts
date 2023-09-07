@@ -78,13 +78,6 @@ export default defineNuxtModule<ModuleOptions>({
     writeTypes(themeConfig, options)
     writeTemplates(themeConfig, options)
 
-    //TODO: add hook to add types to nuxt
-    /*
-    nuxt.hook('prepare:types', ({ references }) => {
-      const vueI18nTypeFilename = resolve(runtimeDir, 'types')
-      references.push({ path: resolve(nuxt.options.buildDir, vueI18nTypeFilename) })
-    })*/
-
     // add theme imports to nuxt
     for(const c of themeConfig){
       addImports([{

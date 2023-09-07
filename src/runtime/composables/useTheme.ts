@@ -14,8 +14,6 @@ export type AutoImportedThemes<T extends ThemeTypes> = {
     [ key in ThemeVariations ]: Theme<Themes[T]>
 }
 
-//Test types
-
 export type ClassesOptions<T extends ThemeTypes> = {
     [P in keyof Themes[T]["options"]]: DeepPartial<keyof NonNullable<Themes[T]["options"][P]>>
 }

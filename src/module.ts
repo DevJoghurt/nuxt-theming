@@ -1,9 +1,13 @@
 import { defineNuxtModule, createResolver, addImports } from '@nuxt/kit'
-import { scanThemeFiles, createThemeConfig, orderThemeDirsByPriority} from './utils'
-import { writeTypes, writeTemplates } from './template' 
+import { scanThemeFiles, createThemeConfig, orderThemeDirsByPriority, createSafelists} from './theme'
+import { writeThemeTypes, writeThemeTemplates } from './template' 
 import { resolve } from 'path'
 import { extendBundler } from './bundler'
-import type { ModuleOptions, ThemeConfig, ThemeDir } from './types'
+import { defu } from 'defu'
+import type { ModuleOptions, ThemeConfig, ThemeDir, ThemeExtendedConfig, ComponentsSafelist } from './types'
+import { defaultExtractor, customSafelistExtractor } from './tailwind'
+import type { ContentConfig, TransformerFn, ExtractorFn } from 'tailwindcss/types/config'
+import { convertComponentName } from './utils'
 
 declare module '@nuxt/schema' {
   interface NuxtHooks {
@@ -20,6 +24,8 @@ export default defineNuxtModule<ModuleOptions>({
   defaults: {
     dir: 'theme',
     variations: [],
+    mergeStrategy: 'tailwind-merge',
+    config: [],
     layers: {
       overwriteTypes: false,
       priority: 0
@@ -28,8 +34,7 @@ export default defineNuxtModule<ModuleOptions>({
   async setup (options, nuxt) {
     const resolver = createResolver(import.meta.url)
 
-
-    const themeConfig = [] as ThemeConfig[]
+    const themeConfigs = [] as ThemeConfig[]
     let themeDirs = [] as ThemeDir[]
 
     nuxt.options.alias['#theme'] = `${nuxt.options.buildDir}/types/theme`
@@ -62,7 +67,6 @@ export default defineNuxtModule<ModuleOptions>({
     }
 
     // Allow extending themes config by other modules - they will be prepended
-    // @ts-ignore
     await nuxt.callHook('theme:extend', themeDirs)
 
     //order themeDirs, if priority is highest it should be first -> this is important for handling types correctly
@@ -71,15 +75,47 @@ export default defineNuxtModule<ModuleOptions>({
     // create themes config
     for (const themeDir of themeDirs) {
       const files = await scanThemeFiles(themeDir.cwd, themeDir.dir)
-      // add files to textsConfig
-      createThemeConfig(themeConfig, files)
+      // add files to themeConfig
+      createThemeConfig(themeConfigs, files)
     }
 
-    writeTypes(themeConfig, options)
-    writeTemplates(themeConfig, options)
+    let globalTailwindSafelist = [] as string[]
+    const componentTailwindSafelist = {} as ComponentsSafelist
+    let componentWhitelist = [] as string[]
 
-    // add theme imports to nuxt
-    for(const c of themeConfig){
+    // theme config is now complete, we can now add the fileConfig and use it
+    for(const c of themeConfigs){
+      // there can be multiple fileConfigs for one file, because of nuxt layers
+      //TODO: check how layering works internally for this fileConfig
+      const fileConfigs = options?.config.filter((f)=>f.name === c.name)
+      if(fileConfigs.length > 0){
+        const fileConfig = defu({}, ...fileConfigs) as ThemeExtendedConfig
+        //parse safelistExtractors for tailwind
+        c.safelists = await createSafelists(c.files, fileConfig)
+        // create global safelist for tailwind config
+        if(c.safelists.length > 0){
+          for(const safelist of c.safelists){
+            const safelistClasses = [...safelist.classes.map((classEl) => safelist.values.map((value) => classEl.replace(new RegExp(`{${safelist.extractor}}`, 'g'), value))).flat()]
+            // merge safelist classes without duplicates
+            globalTailwindSafelist = [...new Set([...globalTailwindSafelist, ...safelistClasses ])]
+            // add classes to component safelist if safelistByProp is true
+            if(safelist.component && safelist.classes.length > 0){
+              if(!componentTailwindSafelist[safelist.component]){
+                componentTailwindSafelist[safelist.component] = []
+              }
+              componentTailwindSafelist[safelist.component].push({
+                classes: safelist.classes,
+                extractor: safelist.extractor
+              })
+              //create component whitelist for tailwind config
+              componentWhitelist = [...new Set([...componentWhitelist, ...convertComponentName(safelist.component) ])]
+
+            }
+          }
+        }
+      }
+
+      // add imports to nuxt to support auto import of theme types by composable useTheme
       addImports([{
         from: resolve(nuxt.options.buildDir, `theme/${c.name}`),
         as: `${c.name}Theme`,
@@ -88,9 +124,36 @@ export default defineNuxtModule<ModuleOptions>({
       }])
     }
 
-    extendBundler(themeConfig)
+    writeThemeTypes(themeConfigs, options)
+    writeThemeTemplates(themeConfigs, options)
 
-    addImports([{
+    // add safelistExtractors to tailwind config, if tailwind module is installed
+    nuxt.hook('tailwindcss:config', (tailwindConfig)=>{
+      //add global safelist
+      tailwindConfig.safelist = tailwindConfig.safelist || []
+      tailwindConfig.safelist.push(...globalTailwindSafelist)
+      //add component safelist as dynamic safelist extractor
+      tailwindConfig.content = tailwindConfig?.content || {} as ContentConfig
+      //@ts-ignore
+      tailwindConfig.content.transform = tailwindConfig.content.transform || {} as TransformerFn
+      //@ts-ignore
+      tailwindConfig.content.transform.vue = (content: string) => {
+        return content.replaceAll(/(?:\r\n|\r|\n)/g, ' ')
+      }
+      //@ts-ignore
+      tailwindConfig.content.extract = tailwindConfig.content.extract || {} as ExtractorFn
+      //@ts-ignore
+      tailwindConfig.content.extract.vue = (content: string) => {
+        return [
+          ...defaultExtractor(content),
+          ...customSafelistExtractor(content, componentWhitelist, componentTailwindSafelist)
+        ]
+      }
+    })
+
+    extendBundler(themeConfigs)
+
+    const imports = [{
       name: 'defineTheme',
       from: resolver.resolve('./runtime/composables/defineTheme')
     },{
@@ -99,6 +162,21 @@ export default defineNuxtModule<ModuleOptions>({
     },{
       name: 'createTheme',
       from: resolver.resolve('./runtime/composables/createTheme')
-    }])
+    }]
+
+    if(options.mergeStrategy === 'tailwind-merge'){
+      imports.push({
+        name: 'mergeTheme',
+        from: resolver.resolve('./runtime/merger/twmerge'),
+      })
+    }
+    if(options.mergeStrategy === 'overwrite'){
+      imports.push({
+        name: 'mergeTheme',
+        from: resolver.resolve('./runtime/merger/overwrite'),
+      })
+    }
+
+    addImports(imports)
   }
 })

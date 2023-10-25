@@ -1,8 +1,9 @@
-export type AnalizedThemeFile = {
-    path: string
+export type ScannedThemeFile = {
+    importPath: string
+    fullPath: string
     fileName: string
     name: string
-    theme: string
+    variation: string
 }
 
 type ThemeFile = {
@@ -10,15 +11,28 @@ type ThemeFile = {
     extension: string
 }
 
-type Theme = {
+type ThemeVariation = {
     name: string
     files: ThemeFile[]
 }
 
+type ThemeImport = {
+    defaults: ThemeFile[]
+    variations: ThemeVariation[]
+}
+
+export type Safelist = {
+    component: string | false
+    extractor: string
+    classes: string[]
+    values: string[]
+  }
+
 export type ThemeConfig = {
     name: string
-    files: ThemeFile[]
-    themes: Theme[]
+    safelists?: Safelist[]
+    files: string[]
+    imports: ThemeImport
 }
 
 export type ThemeDir = {
@@ -27,14 +41,34 @@ export type ThemeDir = {
     priority?: number
 }  
 
+type ComponentSafelist = {
+    classes: string[]
+    extractor: string
+}
+export type ComponentsSafelist =  Record<string, ComponentSafelist[]>
+
+// Module config options for TypeScript interface
+
 type LayersOptions = {
     overwriteTypes?: boolean
     priority?: number
 }
 
-// Module options TypeScript interface definition
+type SafelistExtractor = {
+    component?: string
+    safelistByProp?: boolean
+    values?: string[]
+}
+
+export type ThemeExtendedConfig = {
+    name: string
+    safelistExtractors?: Record <string, SafelistExtractor>
+}
+
 export interface ModuleOptions {
     dir: string
-    variations?: string[]
-    layers?: LayersOptions
+    variations: string[]
+    mergeStrategy: 'tailwind-merge' | 'overwrite'
+    layers: LayersOptions
+    config: ThemeExtendedConfig[]
 }

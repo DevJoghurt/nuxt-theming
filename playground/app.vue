@@ -5,21 +5,21 @@
       label="Button"
       :loading="loading"
       :disabled="loading"
+      color="fuchsia"
       size="sm"
     />
     <FsButton
       label="Toggle Loading"
-      size="lg"
-      :overwrite="{
+      size="md"
+      :ui="{
         button: 'dark:bg-red-500 hover:bg-red-600'
       }"
       @click="toggleLoading"
     />
+    <FsInput />
   </div>
 </template>
 <script setup lang="ts">
-  import type { Button } from '#theme'
-  import { buttonTheme } from '#imports'
 
   const loading = ref(false)
 
@@ -27,11 +27,16 @@
     loading.value = !loading.value
   }
 
-  const theme = createTheme<Button>(buttonTheme,{
+  const theme = useTheme('input', {
+    overwrite: {
+      icon: 'text-gray-500 dark:text-gray-400'
+    }
   })
 
-  const testTheme = useTheme('button')
+  theme('input', {
+    gap: 'lg'
+  })
 
-  testTheme('button')
+  console.log(theme('preset:loadingIcon'))
 
 </script>

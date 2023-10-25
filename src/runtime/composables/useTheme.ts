@@ -5,22 +5,22 @@ import { createTheme } from './createTheme'
 export type UseThemeOptions<T extends ThemeTypes> = {
     theme?: ThemeVariations
     variant?: Themes[T]["variants"] | null
-    overwrite?: ThemeConfigs[T]['base']
-    params?: Record<string, string>
-    merge?: (base: string, overwrite: string) => string
+    extractors?: Record<string, string | undefined>
+    overwrite?: Partial<{ [P in keyof Record<Themes[T]["keys"], string>]: string}>
 }
 
 export type AutoImportedThemes<T extends ThemeTypes> = {
     [ key in ThemeVariations ]: Theme<Themes[T]>
 }
 
-export type ClassesOptions<T extends ThemeTypes> = {
+export type KeysOptions<T extends ThemeTypes> = {
     [P in keyof Themes[T]["options"]]: DeepPartial<keyof NonNullable<Themes[T]["options"][P]>>
 }
 
 export type UseThemeResult<T extends ThemeTypes> = (
-    key: Themes[T]["classes"],
-    options?: ClassesOptions<T>
+    key: Themes[T]["keys"] | `preset:${Themes[T]["presets"]}`,
+    options?: KeysOptions<T>,      
+    prependClasses?: string | string[] | null | undefined | unknown
 ) => string;
 
 export function useTheme<T extends ThemeTypes>(themeType: T, themeOptions: UseThemeOptions<T> = {} as UseThemeOptions<T>, theme: AutoImportedThemes<T> = {} as AutoImportedThemes<T>) : UseThemeResult<T> {

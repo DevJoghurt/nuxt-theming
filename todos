@@ -1,4 +1,3 @@
-@low  add tailwind merge to useTheme
 @low  add possibility to use app.config to overwrite theme:
     - write file to .nuxt/theme/app.config.ts
     - module needs to add it with nuxt hook:
@@ -15,8 +14,3 @@
             }
         }
     }
-@high add possibility to insert theme directly to useTheme and not via string (vite plugin needs to ignore it) -> this is a typescript thing
-        - we need this for the case someone writes a nuxt module that uses the theme, if using extend with layers this is not needed
-        import { useTheme, buttonTheme } from '#imports'
-        useTheme(buttonTheme)
-@high add options function for useTheme -> use dot notations to get options

@@ -3,7 +3,7 @@ import type { NuxtTemplate } from '@nuxt/schema'
 import { resolvePath } from 'mlly'
 import type { ThemeConfig, ModuleOptions } from './types'
 
-  export function writeTypes(config: ThemeConfig[], options: ModuleOptions){
+  export function writeThemeTypes(config: ThemeConfig[], options: ModuleOptions){
     const { variations = [], layers = {} } = options
     const { overwriteTypes = false } = layers
 
@@ -17,16 +17,21 @@ export type DeepPartial<T> = {
     ? DeepPartial<T[P]> & Partial<T[P]>
     : T[P];
 };
+export {
+  ThemeSchema,
+  Theme
+} from '#build/types/theme'
 export type ThemeVariations = 'default'${ variations.length > 0 ? ' |' : ''  } ${variations.length > 0 ? variations.map((name) => `'${name}'` ).join(' | ') : ''}
 export type ThemeTypes = ${config.length > 0 ? config.map((c) => `'${c.name}'` ).join(' | ') : 'empty'}
-${config.map((c) => c.files.filter((file, index) => (overwriteTypes || (!overwriteTypes && index === 0))).map((file, index) => `import ${`l${index}_${c.name}`} from '${file.path}'`).join('\n')).join('\n')}
-${config.map((c) => `export type ${c.name.charAt(0).toUpperCase() + c.name.slice(1)}Config = Defu<typeof l0_${c.name}, [${c.files.slice(1).filter((file, index) => (overwriteTypes || (!overwriteTypes && index > 0))).map((file, index) => `typeof l${index+1}_${c.name}`).join(', ')}]>`).join('\n')}
+${config.map((c) => c.imports.defaults.filter((file, index) => (overwriteTypes || (!overwriteTypes && index === 0))).map((file, index) => `import ${`l${index}_${c.name}`} from '${file.path}'`).join('\n')).join('\n')}
+${config.map((c) => `export type ${c.name.charAt(0).toUpperCase() + c.name.slice(1)}Config = Defu<typeof l0_${c.name}, [${c.imports.defaults.slice(1).filter((file, index) => (overwriteTypes || (!overwriteTypes && index > 0))).map((file, index) => `typeof l${index+1}_${c.name}`).join(', ')}]>`).join('\n')}
 ${config.map((c) => `export type ${c.name.charAt(0).toUpperCase() + c.name.slice(1)} = { 
-  classes: Extract<keyof ${c.name.charAt(0).toUpperCase() + c.name.slice(1)}Config["base"], string>
+  keys: Extract<keyof ${c.name.charAt(0).toUpperCase() + c.name.slice(1)}Config["base"], string>
   variants: Extract<keyof NonNullable<${c.name.charAt(0).toUpperCase() + c.name.slice(1)}Config["variants"]>, string> | 'default'
   options: {
     [P in keyof NonNullable<${c.name.charAt(0).toUpperCase() + c.name.slice(1)}Config["options"]>]?: Record<keyof NonNullable<${c.name.charAt(0).toUpperCase() + c.name.slice(1)}Config["options"][P]>, string>
   }
+  presets: Extract<keyof ${c.name.charAt(0).toUpperCase() + c.name.slice(1)}Config["presets"], string>
 }`).join('\n')}
 export type Themes = {
   ${config.length > 0 ? config.map((c) => `${c.name}: ${c.name.charAt(0).toUpperCase() + c.name.slice(1)}`).join('\n') : 'empty: \'\''}
@@ -40,7 +45,7 @@ export type ThemeConfigs = {
     addTemplate(template)
   }
 
-  export function writeTemplates(config: ThemeConfig[], options: ModuleOptions){
+  export function writeThemeTemplates(config: ThemeConfig[], options: ModuleOptions){
     const { variations = [] } = options
     // write config
     for(const c of config){
@@ -49,14 +54,14 @@ export type ThemeConfigs = {
         write: true,
         getContents: async () => {
           return `import { defu } from '${await _resolveId('defu')}'
-${c.files.map((file, index) => `import ${`l${index}_${c.name}_default`} from '${file.path}'`).join('\n')}
-${c.themes.filter((theme) => (variations.indexOf(theme.name) !== -1)).map((theme) => theme.files.map((file, index) => `import ${`l${index}_${c.name}_${theme.name}`} from '${file.path}'`).join('\n')).join('\n')}
-const defaultTheme = defu(${c.files.map((file, index) => `l${index}_${c.name}_default`).join(', ')})
-${c.themes.filter((theme) => (variations.indexOf(theme.name) !== -1)).map((theme) => `const ${theme.name} = defu(${theme.files.map((file, index) => `l${index}_${c.name}_${theme.name}`).join(', ')}, defaultTheme)`).join('\n')}
+${c.imports.defaults.map((file, index) => `import ${`l${index}_${c.name}_default`} from '${file.path}'`).join('\n')}
+${c.imports.variations.filter((theme) => (variations.indexOf(theme.name) !== -1)).map((theme) => theme.files.map((file, index) => `import ${`l${index}_${c.name}_${theme.name}`} from '${file.path}'`).join('\n')).join('\n')}
+const defaultTheme = defu(${c.imports.defaults.map((file, index) => `l${index}_${c.name}_default`).join(', ')})
+${c.imports.variations.filter((theme) => (variations.indexOf(theme.name) !== -1)).map((theme) => `const ${theme.name} = defu(${theme.files.map((file, index) => `l${index}_${c.name}_${theme.name}`).join(', ')}, defaultTheme)`).join('\n')}
 const themes = {
   default: defaultTheme
 }
-${c.themes.filter((theme) => (variations.indexOf(theme.name) !== -1)).map((theme) => `themes['${theme.name}'] = ${theme.name}`).join('\n')}
+${c.imports.variations.filter((theme) => (variations.indexOf(theme.name) !== -1)).map((theme) => `themes['${theme.name}'] = ${theme.name}`).join('\n')}
 export default themes`
         }
       }

@@ -5,18 +5,20 @@ export type DeepPartial<T> = {
 };
   
 export type ThemeSchema = {
-    classes: string
+    keys: string
     variants?: string
     options?: {
       [key: string]: Record<string, string>
     }
+    presets?: string
 }
   
 export interface Theme<T extends ThemeSchema> {
-    base: DeepPartial<Record<T["classes"], string>>
-    defaults?: DeepPartial<Record<T["classes"], string>>
-    variants?: DeepPartial<Record<NonNullable<T["variants"]>, Record<T["classes"], string>>>
-    options: {
+    base: DeepPartial<Record<T["keys"], string>>
+    defaults?: DeepPartial<Record<T["keys"], string>>
+    variants?: DeepPartial<Record<NonNullable<T["variants"]>, Record<T["keys"], string>>>
+    options?: {
         [P in keyof T["options"]]: DeepPartial<Record<keyof NonNullable<T["options"][P]>, string>>
     }
+    presets?: DeepPartial<Record<T["presets"], string>>
 }

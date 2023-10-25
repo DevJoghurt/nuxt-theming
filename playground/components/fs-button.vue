@@ -1,171 +1,227 @@
 <template>
-  <component
-    v-bind="$attrs"
-    :is="props.as"
-    :class="theme('button',{
-      size: props.size,
-      rounded: props.rounded,
-      loading: transformBoolean(props.loading),
-      disabled: transformBoolean(props.disabled)
-    })"
-    :type="props.type"
-    :disabled="props.disabled"
-    @click="handleClickEvent"
+  <FsLink 
+    v-bind="omit($attrs, ['class'])"
+    :type="type" 
+    :class="theme('button', {
+      size: size,
+      gap: size,
+      rounded: (!roundedStart && !roundedEnd) ? rounded : 'none',
+      roundedStart: roundedStart ? rounded : 'none',
+      roundedEnd: roundedEnd ? rounded : 'none',
+      padding: props.padded ? size : undefined,
+      square: isSquare ? size : undefined,
+      loading: transformBoolean(loading),
+      block: transformBoolean(block),
+    }, $attrs.class)"
+    :disabled="disabled"
   >
-    <div
-      :class="theme('container')"
-    >
-      <slot name="default">
-        <!-- Loading Icon -->
-        <span v-if="loading">
-          <svg
-            viewBox="0 0 24 24"
-            width="1.2em"
-            height="1.2em"
-            :class="theme('spinner')"
-          >
-            <path
-              fill="currentColor"
-              d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z"
-              opacity=".25"
-            /><path
-              fill="currentColor"
-              d="M12,4a8,8,0,0,1,7.89,6.7A1.53,1.53,0,0,0,21.38,12h0a1.5,1.5,0,0,0,1.48-1.75,11,11,0,0,0-21.72,0A1.5,1.5,0,0,0,2.62,12h0a1.53,1.53,0,0,0,1.49-1.3A8,8,0,0,1,12,4Z"
-            >
-              <animateTransform
-                attributeName="transform"
-                dur="0.75s"
-                repeatCount="indefinite"
-                type="rotate"
-                values="0 12 12;360 12 12"
-              />
-            </path>
-          </svg>
-        </span>
-        <!-- If not loading, show the user provided icon -->
-        <span v-if="!loading && hasSlot($slots.icon)">
-          <slot name="icon" />
-        </span>
-        <!-- Actual button label -->
-        <slot name="label">
-          <span>
-            {{ label }}
-          </span>
-        </slot>
-      </slot>
-    </div>
-  </component>
+    <slot name="leading" :disabled="disabled" :loading="loading">
+      <FsIcon v-if="isLeading && leadingIconName" :name="leadingIconName" :class="theme('icon',{
+        iconSize: size,
+        iconLoading: loading && isLeading ? 'true' : 'false', 
+      })" aria-hidden="true" />
+    </slot>
+
+    <slot>
+      <span v-if="label" :class="theme('label', {
+        truncate: transformBoolean(truncate)
+      })">
+        {{ label }}
+      </span>
+    </slot>
+
+    <slot name="trailing" :disabled="disabled" :loading="loading">
+      <FsIcon 
+        v-if="isTrailing && trailingIconName" 
+        :name="trailingIconName" 
+        :class="theme('icon',{
+          iconSize: size,
+          iconLoading: transformBoolean(loading), 
+        })" aria-hidden="true" />
+    </slot>
+  </FsLink>
 </template>
-<script lang="ts">
-    export default {
-        name: 'FsButton',
-        inheritAttrs: true,
-    }
-</script>
 <script setup lang="ts">
-    import type { ComponentPublicInstance, Ref } from 'vue'
-    import { onMounted, ref } from 'vue'
-    import type { Slot, VNode } from 'vue'
-    import { Comment, Text } from 'vue'
-    import type { ButtonConfig, Button  } from '#theme'
-    import { buttonTheme } from '#imports'
-    import { twMerge } from 'tailwind-merge'
+  import type { ComponentPublicInstance, Ref } from 'vue'
+  import { onMounted, ref, computed, useSlots } from 'vue'
+  import { transformBoolean } from '../utils/transformBoolean'
+  import { omit } from '../utils/omit'
+  import FsIcon from './fs-icon.vue'
+  import FsLink from './fs-link.vue'
+  import { createTheme, buttonTheme, type PropType } from '#imports'
+  import type { ButtonConfig, Button  } from '#theme'
+  import type { TailwindColors } from '../types'
+  // TODO: Remove, nuxt-theming should support presets and overwrite by app.config
+  // @ts-ignore
+  import appConfig from '#build/app.config'
 
-    type Props = {
-        as?: string
-        type?: string
-        variant?: Button['variants'] | null
-        overwrite?: ButtonConfig['base']
-        disabled?: boolean
-        loading?: keyof ButtonConfig['options']['loading'] | boolean
-        focusOnMount?: boolean
-        size?: keyof ButtonConfig['options']['size']
-        rounded?: keyof ButtonConfig['options']['rounded']
-        label?: string
+
+  const props = defineProps({
+    type: {
+      type: String,
+      default: 'button'
+    },
+    block: {
+      type: Boolean,
+      default: false
+    },
+    label: {
+      type: String,
+      default: null
+    },
+    loading: {
+      type: Boolean,
+      default: false
+    },
+    disabled: {
+      type: Boolean,
+      default: false
+    },
+    padded: {
+      type: Boolean,
+      default: true
+    },
+    focusOnMount: {
+      type: Boolean,
+      default: false
+    },
+    shadow: {
+      type: String as PropType<keyof ButtonConfig['options']['shadow']>,
+      default: () => buttonTheme.default.presets.shadow,
+      validator (value: string) {
+        return Object.keys(buttonTheme.default.options.shadow).includes(value)
+      }
+    },
+    rounded: {
+      type: String as PropType<keyof ButtonConfig['options']['rounded']>,
+      default: () => buttonTheme.default.presets.rounded,
+      validator (value: string) {
+        return Object.keys(buttonTheme.default.options.rounded).includes(value)
+      }
+    },
+    roundedStart: {
+      type: Boolean,
+      default: false
+    },
+    roundedEnd: {
+      type: Boolean,
+      default: false
+    },
+    size: {
+      type: String as PropType<keyof ButtonConfig['options']['size']>,
+      default: () => buttonTheme.default.presets.size,
+      validator (value: string) {
+        return Object.keys(buttonTheme.default.options.size).includes(value)
+      }
+    },
+    color: {
+      type: String as PropType<TailwindColors>,
+      default: buttonTheme.default.presets.color,
+      validator (value: string) {
+        return ['primary','red','green'].includes(value)
+      }
+    },
+    variant: {
+      type: String as PropType<Button['variants']>,
+      default: () => null,
+      validator (value: string) {
+        return [
+          ...Object.keys(buttonTheme.default.variants),
+        ].includes(value)
+      }
+    },
+    icon: {
+      type: String,
+      default: null
+    },
+    loadingIcon: {
+      type: String,
+      default: () => buttonTheme.default.presets.loadingIcon
+    },
+    leadingIcon: {
+      type: String,
+      default: null
+    },
+    trailingIcon: {
+      type: String,
+      default: null
+    },
+    trailing: {
+      type: Boolean,
+      default: false
+    },
+    leading: {
+      type: Boolean,
+      default: false
+    },
+    square: {
+      type: Boolean,
+      default: false
+    },
+    truncate: {
+      type: Boolean,
+      default: false
+    },
+    ui: {
+      type: Object as PropType<Partial<ButtonConfig['base']>>,
+      default: undefined
     }
-    const props = withDefaults(defineProps<Props>(),{
-        loading: false,
-        disabled: false,
-        focusOnMount: false,
-        as: 'button',
-        type: 'button',
-        size: 'md',
-        color: 'red',
-        label: 'Button',
-        rounded: 'full',
-        variant: null
-    })
+  })
 
-    const emit = defineEmits(['click'])
-    const root = ref(null) as Ref<ComponentPublicInstance<HTMLInputElement> | null>
+  defineOptions({
+    inheritAttrs: false
+  })
 
-    const generateFormClasses = useTheme('form', {
-      theme: 'app',
-      overwrite: {
-        container: 'flex items-center justify-center'
-      },
-      variant: 'error',
-      merge: twMerge
-    })
+  const root = ref(null) as Ref<ComponentPublicInstance<HTMLInputElement> | null>
 
-    console.log(generateFormClasses('container', {
-      size: 'xs',
-    }))
-
-    const theme = computed(()=>createTheme<Button>(buttonTheme, {
-      theme: 'default',
+  const theme = computed(() => createTheme<Button>(buttonTheme, {
       variant: props.variant,
-      overwrite: props.overwrite,
-      merge: twMerge
-    }))
+      overwrite: props.ui,
+      extractors: {
+          color: props.color
+      }
+  }))
 
+  theme.value('button',{
+    gap: 'lg'
+  })
+  const slots = useSlots()
 
-    function hasSlot(slot: Slot | undefined, slotProps = {}): boolean {
-        if (!slot)
-        return false
+  const isLeading = computed(() => {
+    return (props.icon && props.leading) || (props.icon && !props.trailing) || (props.loading && !props.trailing) || props.leadingIcon
+  })
 
-        return slot(slotProps).some((vnode: VNode) => {
-            if (vnode.type === Comment)
-        return false
+  const isTrailing = computed(() => {
+    return (props.icon && props.trailing) || (props.loading && props.trailing) || props.trailingIcon
+  })
 
-        if (Array.isArray(vnode.children) && !vnode.children.length)
-        return false
+  const isSquare = computed(() => props.square || (!slots.default && !props.label))
 
-        return (
-        vnode.type !== Text
-        || (typeof vnode.children === 'string' && vnode.children.trim() !== '')
-        )
-        })
-    }
+  const leadingIconName = computed(() => {
+      if (props.loading) {
+        return props.loadingIcon
+      }
 
-    function transformBoolean(value: boolean | string): 'true' | 'false' | undefined {
-        if (typeof value === 'string' && ['true', 'false'].includes(value)) {
-            return value as 'true' | 'false'
-        }
-        if (typeof value === 'boolean') {
-            return value ? 'true' : 'false'
-        }
-        return value as 'true' | 'false' | undefined
-    }
-
-    // If it's disable, just ignore it
-    const handleClickEvent = (event: MouseEvent) => {
-        if (props.disabled || props.loading) {
-            event.preventDefault()
-            event.stopPropagation()
-            return
-        }
-        emit('click', event)
-    }
-        // Focus on mount, (useful for modals )
-    onMounted(() => {
-        if (props.focusOnMount) {
-            try {
-                root?.value?.focus()
-            }
-            catch (e) {
-                root?.value?.$el?.focus()
-            }
-        }
+      return props.leadingIcon || props.icon
     })
+
+    const trailingIconName = computed(() => {
+      if (props.loading && !isLeading.value) {
+        return props.loadingIcon
+      }
+
+      return props.trailingIcon || props.icon
+    })
+  
+  // Focus on mount, (useful for modals )
+  onMounted(() => {
+    if (props.focusOnMount) {
+        try {
+            root?.value?.focus()
+        }
+        catch (e) {
+            root?.value?.$el?.focus()
+        }
+    }
+  })
 </script>

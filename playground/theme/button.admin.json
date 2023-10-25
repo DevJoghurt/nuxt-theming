@@ -1,6 +1,5 @@
 {
     "base": {
-        "button": "bg-red-500 text-admin",
-        "hover": "hover:bg-red-600 admin"
+        "button": "focus:outline-none focus-visible:outline-0 disabled:cursor-not-allowed disabled:opacity-75 flex-shrink-0 bg-red-500 text-admin"
     }
 }

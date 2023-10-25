@@ -11,7 +11,6 @@ export default defineNuxtModule({
     defaults: {
     },
     async setup (options, nuxt) {
-      //@ts-ignore
         nuxt.hook('theme:extend', (themeDirs)=>{
           themeDirs.unshift({
             cwd: nuxt.options.rootDir,

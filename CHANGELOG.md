@@ -3,6 +3,10 @@
 
 ## v0.0.18
 
+[compare changes](https://undefined/undefined/compare/v0.0.18...v0.0.18)
+
+## v0.0.18
+
 [compare changes](https://undefined/undefined/compare/v0.0.17...v0.0.18)
 
 ## v0.0.17

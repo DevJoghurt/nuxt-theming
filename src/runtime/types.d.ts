@@ -20,5 +20,5 @@ export interface Theme<T extends ThemeSchema> {
     options?: {
         [P in keyof T["options"]]: DeepPartial<Record<keyof NonNullable<T["options"][P]>, string>>
     }
-    presets?: DeepPartial<Record<T["presets"], string>>
+    presets?: DeepPartial<Record<NonNullable<T["presets"]>, string>>
 }

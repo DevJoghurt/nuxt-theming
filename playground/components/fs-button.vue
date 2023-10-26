@@ -51,9 +51,6 @@
   import { createTheme, buttonTheme, type PropType } from '#imports'
   import type { ButtonConfig, Button  } from '#theme'
   import type { TailwindColors } from '../types'
-  // TODO: Remove, nuxt-theming should support presets and overwrite by app.config
-  // @ts-ignore
-  import appConfig from '#build/app.config'
 
 
   const props = defineProps({
@@ -182,9 +179,6 @@
       }
   }))
 
-  theme.value('button',{
-    gap: 'lg'
-  })
   const slots = useSlots()
 
   const isLeading = computed(() => {

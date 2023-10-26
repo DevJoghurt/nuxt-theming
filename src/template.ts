@@ -17,10 +17,6 @@ export type DeepPartial<T> = {
     ? DeepPartial<T[P]> & Partial<T[P]>
     : T[P];
 };
-export {
-  ThemeSchema,
-  Theme
-} from '#build/types/theme'
 export type ThemeVariations = 'default'${ variations.length > 0 ? ' |' : ''  } ${variations.length > 0 ? variations.map((name) => `'${name}'` ).join(' | ') : ''}
 export type ThemeTypes = ${config.length > 0 ? config.map((c) => `'${c.name}'` ).join(' | ') : 'empty'}
 ${config.map((c) => c.imports.defaults.filter((file, index) => (overwriteTypes || (!overwriteTypes && index === 0))).map((file, index) => `import ${`l${index}_${c.name}`} from '${file.path}'`).join('\n')).join('\n')}

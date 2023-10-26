@@ -1,10 +1,10 @@
 const colors = require('tailwindcss/colors')
 
 export default defineNuxtConfig({
+  devtools: true,
   modules: [
     '~/modules/test/module',
-    '../src/module',
-    '@nuxtjs/tailwindcss'
+    '../src/module'
   ],
   theming: {
     variations: ['admin', 'app'],
@@ -35,19 +35,22 @@ export default defineNuxtConfig({
     ]
   },
   tailwindcss: {
+    viewer: true,
     config: {
       theme: {
         extend: {
           colors: {
             // Set your primary color
-            primary: colors.indigo, 
+            primary: colors.zinc, 
           },
         },
       },
-      content: [
-        'playground/theme/**/**.{ts,js,json}',
-        'playground/theme-extend/**/**.{ts,js,json}'
-      ]
+      content:{
+        files: [
+          'playground/theme/**/**.{ts,js,json}',
+          'playground/theme-extend/**/**.{ts,js,json}'
+        ]
+      }
     }
   }
 })

@@ -1,10 +1,12 @@
 // @ts-ignore
 import { defaultExtractor as createDefaultExtractor } from 'tailwindcss/lib/lib/defaultExtractor.js'
-import type { ComponentsSafelist } from './types'
+import { installModule } from '@nuxt/kit'
+import type { Nuxt } from '@nuxt/schema'
+import type { ComponentsSafelist, SafelistConfig } from './types'
 
-export const defaultExtractor = createDefaultExtractor({ tailwindConfig: { separator: ':' } })
+const defaultExtractor = createDefaultExtractor({ tailwindConfig: { separator: ':' } })
 
-export const customSafelistExtractor = (content: string, components: string[], componentTailwindSafelist: ComponentsSafelist) => {
+const customSafelistExtractor = (content: string, components: string[], componentTailwindSafelist: ComponentsSafelist) => {
   let classes = [] as string[]
 
   //get component name from content string
@@ -30,4 +32,34 @@ export const customSafelistExtractor = (content: string, components: string[], c
   }
 
   return classes
+}
+
+export async function installTailwindModule(nuxt: Nuxt, safelistConfig: SafelistConfig){
+  const tailwindConfig = {
+    safelist: safelistConfig.global,
+    content: {
+      transform: {
+        vue: (content: string) => {
+          return content.replaceAll(/(?:\r\n|\r|\n)/g, ' ')
+        }
+      },
+      extract: {
+        vue : (content: string) => {
+          return [
+            ...defaultExtractor(content),
+            ...customSafelistExtractor(content, safelistConfig.componentWhitelist, safelistConfig.components)
+          ]
+        }
+      }
+    }
+  }
+  const {
+    viewer = false,
+    exposeConfig = false,
+  } = nuxt.options?.tailwindcss || {}
+  await installModule('@nuxtjs/tailwindcss', {
+    viewer,
+    exposeConfig,
+    config: tailwindConfig
+  }, nuxt)
 }

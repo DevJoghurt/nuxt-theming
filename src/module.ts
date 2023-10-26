@@ -1,12 +1,11 @@
-import { defineNuxtModule, createResolver, addImports } from '@nuxt/kit'
+import { defineNuxtModule, createResolver, addImports, installModule } from '@nuxt/kit'
 import { scanThemeFiles, createThemeConfig, orderThemeDirsByPriority, createSafelists} from './theme'
 import { writeThemeTypes, writeThemeTemplates } from './template' 
 import { resolve } from 'path'
 import { extendBundler } from './bundler'
 import { defu } from 'defu'
-import type { ModuleOptions, ThemeConfig, ThemeDir, ThemeExtendedConfig, ComponentsSafelist } from './types'
-import { defaultExtractor, customSafelistExtractor } from './tailwind'
-import type { ContentConfig, TransformerFn, ExtractorFn } from 'tailwindcss/types/config'
+import type { ModuleOptions, ThemeConfig, ThemeDir, ThemeExtendedConfig, SafelistConfig } from './types'
+import { installTailwindModule } from './tailwind'
 import { convertComponentName } from './utils'
 
 declare module '@nuxt/schema' {
@@ -79,9 +78,11 @@ export default defineNuxtModule<ModuleOptions>({
       createThemeConfig(themeConfigs, files)
     }
 
-    let globalTailwindSafelist = [] as string[]
-    const componentTailwindSafelist = {} as ComponentsSafelist
-    let componentWhitelist = [] as string[]
+    const safelistConfig = {
+      global: [],
+      components: {},
+      componentWhitelist: []
+    } as SafelistConfig
 
     // theme config is now complete, we can now add the fileConfig and use it
     for(const c of themeConfigs){
@@ -97,18 +98,18 @@ export default defineNuxtModule<ModuleOptions>({
           for(const safelist of c.safelists){
             const safelistClasses = [...safelist.classes.map((classEl) => safelist.values.map((value) => classEl.replace(new RegExp(`{${safelist.extractor}}`, 'g'), value))).flat()]
             // merge safelist classes without duplicates
-            globalTailwindSafelist = [...new Set([...globalTailwindSafelist, ...safelistClasses ])]
+            safelistConfig.global = [...new Set([...safelistConfig.global, ...safelistClasses ])]
             // add classes to component safelist if safelistByProp is true
             if(safelist.component && safelist.classes.length > 0){
-              if(!componentTailwindSafelist[safelist.component]){
-                componentTailwindSafelist[safelist.component] = []
+              if(!safelistConfig.components[safelist.component]){
+                safelistConfig.components[safelist.component] = []
               }
-              componentTailwindSafelist[safelist.component].push({
+              safelistConfig.components[safelist.component].push({
                 classes: safelist.classes,
                 extractor: safelist.extractor
               })
               //create component whitelist for tailwind config
-              componentWhitelist = [...new Set([...componentWhitelist, ...convertComponentName(safelist.component) ])]
+              safelistConfig.componentWhitelist = [...new Set([...safelistConfig.componentWhitelist, ...convertComponentName(safelist.component) ])]
 
             }
           }
@@ -124,32 +125,31 @@ export default defineNuxtModule<ModuleOptions>({
       }])
     }
 
-    writeThemeTypes(themeConfigs, options)
-    writeThemeTemplates(themeConfigs, options)
+    // 
+    nuxt.hook('tailwindcss:resolvedConfig', (tailwindConfig)=>{
+      const globalColors: any = {
+        ...(tailwindConfig.theme?.colors || {}),
+        ...tailwindConfig.theme?.extend?.colors
+      }
 
-    // add safelistExtractors to tailwind config, if tailwind module is installed
-    nuxt.hook('tailwindcss:config', (tailwindConfig)=>{
-      //add global safelist
-      tailwindConfig.safelist = tailwindConfig.safelist || []
-      tailwindConfig.safelist.push(...globalTailwindSafelist)
-      //add component safelist as dynamic safelist extractor
-      tailwindConfig.content = tailwindConfig?.content || {} as ContentConfig
-      //@ts-ignore
-      tailwindConfig.content.transform = tailwindConfig.content.transform || {} as TransformerFn
-      //@ts-ignore
-      tailwindConfig.content.transform.vue = (content: string) => {
-        return content.replaceAll(/(?:\r\n|\r|\n)/g, ' ')
-      }
-      //@ts-ignore
-      tailwindConfig.content.extract = tailwindConfig.content.extract || {} as ExtractorFn
-      //@ts-ignore
-      tailwindConfig.content.extract.vue = (content: string) => {
-        return [
-          ...defaultExtractor(content),
-          ...customSafelistExtractor(content, componentWhitelist, componentTailwindSafelist)
-        ]
-      }
+      const colors = Object.keys(globalColors).filter(key => {
+        const excludedColors = ['black', 'white', 'inherit', 'current', 'transparent'];
+        return !excludedColors.includes(key);
+      })
+
+      writeThemeTypes(themeConfigs, colors, options)
+      writeThemeTemplates(themeConfigs, colors, options)
+
+      addImports([{
+        from: resolve(nuxt.options.buildDir, 'theme/_colors.ts'),
+        as: 'tailwindColors',
+        name: 'default',
+        priority: 100
+      }])
     })
+
+    await installTailwindModule(nuxt, safelistConfig)
+
 
     extendBundler(themeConfigs)
 

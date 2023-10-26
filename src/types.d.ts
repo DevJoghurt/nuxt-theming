@@ -47,6 +47,12 @@ type ComponentSafelist = {
 }
 export type ComponentsSafelist =  Record<string, ComponentSafelist[]>
 
+export type SafelistConfig = {
+    global: string[]
+    components: ComponentsSafelist
+    componentWhitelist: string[]
+  }
+
 // Module config options for TypeScript interface
 
 type LayersOptions = {

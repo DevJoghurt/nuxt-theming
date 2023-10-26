@@ -48,9 +48,8 @@
   import { omit } from '../utils/omit'
   import FsIcon from './fs-icon.vue'
   import FsLink from './fs-link.vue'
-  import { createTheme, buttonTheme, type PropType } from '#imports'
-  import type { ButtonConfig, Button  } from '#theme'
-  import type { TailwindColors } from '../types'
+  import { tailwindColors ,createTheme, buttonTheme, type PropType } from '#imports'
+  import type { ButtonConfig, Button, TailwindColors  } from '#theme'
 
 
   const props = defineProps({
@@ -115,7 +114,7 @@
       type: String as PropType<TailwindColors>,
       default: buttonTheme.default.presets.color,
       validator (value: string) {
-        return ['primary','red','green'].includes(value)
+        return tailwindColors.includes(value)
       }
     },
     variant: {

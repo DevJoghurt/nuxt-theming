@@ -5,7 +5,7 @@
       label="Button"
       :loading="loading"
       :disabled="loading"
-      color="fuchsia"
+      color="purple"
       size="sm"
     />
     <FsButton

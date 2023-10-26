@@ -3,7 +3,7 @@ import type { NuxtTemplate } from '@nuxt/schema'
 import { resolvePath } from 'mlly'
 import type { ThemeConfig, ModuleOptions } from './types'
 
-  export function writeThemeTypes(config: ThemeConfig[], options: ModuleOptions){
+  export function writeThemeTypes(config: ThemeConfig[], colors: string[], options: ModuleOptions){
     const { variations = [], layers = {} } = options
     const { overwriteTypes = false } = layers
 
@@ -17,6 +17,7 @@ export type DeepPartial<T> = {
     ? DeepPartial<T[P]> & Partial<T[P]>
     : T[P];
 };
+export type TailwindColors = ${colors.length > 0 ? colors.map((color) => `'${color}'`).join(' | ') : 'empty'}
 export type ThemeVariations = 'default'${ variations.length > 0 ? ' |' : ''  } ${variations.length > 0 ? variations.map((name) => `'${name}'` ).join(' | ') : ''}
 export type ThemeTypes = ${config.length > 0 ? config.map((c) => `'${c.name}'` ).join(' | ') : 'empty'}
 ${config.map((c) => c.imports.defaults.filter((file, index) => (overwriteTypes || (!overwriteTypes && index === 0))).map((file, index) => `import ${`l${index}_${c.name}`} from '${file.path}'`).join('\n')).join('\n')}
@@ -41,7 +42,7 @@ export type ThemeConfigs = {
     addTemplate(template)
   }
 
-  export function writeThemeTemplates(config: ThemeConfig[], options: ModuleOptions){
+  export function writeThemeTemplates(config: ThemeConfig[], colors: string[], options: ModuleOptions){
     const { variations = [] } = options
     // write config
     for(const c of config){
@@ -63,6 +64,16 @@ export default themes`
       }
       addTemplate(template)
     } 
+
+    // write available tailwind colors
+    const template: NuxtTemplate = {
+      filename: `theme/_colors.ts`,
+      write: true,
+      getContents: async () => {
+        return `export default ${JSON.stringify(colors)}`
+      }
+    }
+    addTemplate(template)
 
   }
 

@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.0.19
+
+[compare changes](https://undefined/undefined/compare/v0.0.18...v0.0.19)
+
+### 🏡 Chore
+
+- **release:** V0.0.18 (8f11cb2)
+
+### ❤️ Contributors
+
+- DevJoghurt <johannes@disedia.com>
+
 ## v0.0.18
 
 [compare changes](https://undefined/undefined/compare/v0.0.18...v0.0.18)

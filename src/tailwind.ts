@@ -55,7 +55,7 @@ export async function installTailwindModule(nuxt: Nuxt, safelistConfig: Safelist
   }
   const {
     viewer = false,
-    exposeConfig = false,
+    exposeConfig = true,
   } = nuxt.options?.tailwindcss || {}
   await installModule('@nuxtjs/tailwindcss', {
     viewer,

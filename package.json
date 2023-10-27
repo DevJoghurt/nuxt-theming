@@ -1,6 +1,6 @@
 {
   "name": "nuxt-theming",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "description": "Tailwind based theming for Nuxt 3",
   "repository": "@disedia/nuxt-theming",
   "license": "MIT",

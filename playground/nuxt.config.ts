@@ -1,7 +1,9 @@
 const colors = require('tailwindcss/colors')
 
 export default defineNuxtConfig({
-  devtools: true,
+  devtools: {
+    enabled: true
+  },
   modules: [
     '~/modules/test/module',
     '../src/module'
@@ -17,7 +19,7 @@ export default defineNuxtConfig({
         safelistExtractors:{ 
           color: {
             component: 'FsButton',
-            safelistByProp: true,
+            safelistByProp: 'buttonColor',
             values: ['primary']
           }
         }

@@ -1,4 +1,4 @@
-import { defineNuxtModule, createResolver, addImports, installModule } from '@nuxt/kit'
+import { defineNuxtModule, createResolver, addImports } from '@nuxt/kit'
 import { scanThemeFiles, createThemeConfig, orderThemeDirsByPriority, createSafelists} from './theme'
 import { writeThemeTypes, writeThemeTemplates } from './template' 
 import { resolve } from 'path'
@@ -32,6 +32,9 @@ export default defineNuxtModule<ModuleOptions>({
   },
   async setup (options, nuxt) {
     const resolver = createResolver(import.meta.url)
+
+    // Transpile runtime
+    nuxt.options.build.transpile.push(resolve('runtime'))
 
     const themeConfigs = [] as ThemeConfig[]
     let themeDirs = [] as ThemeDir[]
@@ -105,6 +108,7 @@ export default defineNuxtModule<ModuleOptions>({
                 safelistConfig.components[safelist.component] = []
               }
               safelistConfig.components[safelist.component].push({
+                safelistByProp: safelist.safelistByProp,
                 classes: safelist.classes,
                 extractor: safelist.extractor
               })
@@ -125,7 +129,7 @@ export default defineNuxtModule<ModuleOptions>({
       }])
     }
 
-    // 
+    //@ts-ignore
     nuxt.hook('tailwindcss:resolvedConfig', (tailwindConfig)=>{
       const globalColors: any = {
         ...(tailwindConfig.theme?.colors || {}),
@@ -141,7 +145,7 @@ export default defineNuxtModule<ModuleOptions>({
       writeThemeTemplates(themeConfigs, colors, options)
 
       addImports([{
-        from: resolve(nuxt.options.buildDir, 'theme/_colors.ts'),
+        from: resolve(nuxt.options.buildDir, 'theme/_colors'),
         as: 'tailwindColors',
         name: 'default',
         priority: 100

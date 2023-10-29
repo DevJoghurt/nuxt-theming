@@ -18,7 +18,11 @@ const customSafelistExtractor = (content: string, components: string[], componen
   for(const component of matchedComponents){
     if(componentTailwindSafelist[component]){
       for(const safelist of componentTailwindSafelist[component]){
-        const regex = new RegExp(`<([A-Za-z][A-Za-z0-9]*(?:-[A-Za-z][A-Za-z0-9]*)*)\\s+(?![^>]*:${safelist.extractor}\\b)[^>]*\\b${safelist.extractor}=["']([^"']+)["'][^>]*>`, 'gs')
+        let safelistProp = safelist.extractor
+        if(typeof safelist.safelistByProp === 'string'){
+          safelistProp = safelist.safelistByProp
+        }
+        const regex = new RegExp(`<([A-Za-z][A-Za-z0-9]*(?:-[A-Za-z][A-Za-z0-9]*)*)\\s+(?![^>]*:${safelistProp}\\b)[^>]*\\b${safelistProp}=["']([^"']+)["'][^>]*>`, 'gs')
         const matches = content.matchAll(regex)
         for (const match of matches) {
           const [, extractedComponent, extractedValue] = match

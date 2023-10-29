@@ -1,5 +1,5 @@
 <template>
-    <span :class="name" />
+  <span :class="name" />
 </template>
 <script setup lang="ts">
     export type Props = {

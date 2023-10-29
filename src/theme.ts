@@ -16,6 +16,7 @@ export async function createSafelists(files: string[], extendedConfig: ThemeExte
         const classes = extractClasses(fileContent, `{${extractor}}`)
         safelists.push({
           component: extendedConfig.safelistExtractors[extractor]?.safelistByProp ? extendedConfig.safelistExtractors[extractor]?.component || false : false,
+          safelistByProp: extendedConfig.safelistExtractors[extractor]?.safelistByProp,
           extractor,
           classes,
           values: extendedConfig.safelistExtractors[extractor].values || [],

@@ -15,29 +15,47 @@
     }, $attrs.class)"
     :disabled="disabled"
   >
-    <slot name="leading" :disabled="disabled" :loading="loading">
-      <FsIcon v-if="isLeading && leadingIconName" :name="leadingIconName" :class="theme('icon',{
-        iconSize: size,
-        iconLoading: loading && isLeading ? 'true' : 'false', 
-      })" aria-hidden="true" />
+    <slot
+      name="leading"
+      :disabled="disabled"
+      :loading="loading"
+    >
+      <FsIcon
+        v-if="isLeading && leadingIconName"
+        :name="leadingIconName"
+        :class="theme('icon',{
+          iconSize: size,
+          iconLoading: loading && isLeading ? 'true' : 'false', 
+        })"
+        aria-hidden="true"
+      />
     </slot>
 
     <slot>
-      <span v-if="label" :class="theme('label', {
-        truncate: transformBoolean(truncate)
-      })">
+      <span
+        v-if="label"
+        :class="theme('label', {
+          truncate: transformBoolean(truncate)
+        })"
+      >
         {{ label }}
       </span>
     </slot>
 
-    <slot name="trailing" :disabled="disabled" :loading="loading">
+    <slot
+      name="trailing"
+      :disabled="disabled"
+      :loading="loading"
+    >
       <FsIcon 
         v-if="isTrailing && trailingIconName" 
         :name="trailingIconName" 
         :class="theme('icon',{
           iconSize: size,
           iconLoading: transformBoolean(loading), 
-        })" aria-hidden="true" />
+        })"
+        aria-hidden="true"
+      />
     </slot>
   </FsLink>
 </template>
@@ -117,6 +135,13 @@
         return tailwindColors.includes(value)
       }
     },
+    buttonColor: {
+      type: String as PropType<TailwindColors>,
+      default: buttonTheme.default.presets.color,
+      validator (value: string) {
+        return tailwindColors.includes(value)
+      }
+    },
     variant: {
       type: String as PropType<Button['variants']>,
       default: () => null,
@@ -174,7 +199,7 @@
       variant: props.variant,
       overwrite: props.ui,
       extractors: {
-          color: props.color
+          color: props.buttonColor
       }
   }))
 

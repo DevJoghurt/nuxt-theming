@@ -1,26 +1,32 @@
 <template>
-    <button v-if="!to" :type="type" :disabled="disabled" v-bind="$attrs" :class="inactiveClass">
-      <slot />
-    </button>
-    <NuxtLink
-      v-else
-      v-slot="{ route, href, target, rel, navigate, isActive, isExactActive, isExternal }"
-      v-bind="$props"
-      custom
+  <button
+    v-if="!to"
+    :type="type"
+    :disabled="disabled"
+    v-bind="$attrs"
+    :class="inactiveClass"
+  >
+    <slot />
+  </button>
+  <NuxtLink
+    v-else
+    v-slot="{ route, href, target, rel, navigate, isActive, isExactActive, isExternal }"
+    v-bind="$props"
+    custom
+  >
+    <a
+      v-bind="$attrs"
+      :href="!disabled ? href : undefined"
+      :aria-disabled="disabled ? 'true' : undefined"
+      :role="disabled ? 'link' : undefined"
+      :rel="rel"
+      :target="target"
+      :class="resolveLinkClass(route, $route, { isActive, isExactActive })"
+      @click="(e) => !isExternal && navigate(e)"
     >
-      <a
-        v-bind="$attrs"
-        :href="!disabled ? href : undefined"
-        :aria-disabled="disabled ? 'true' : undefined"
-        :role="disabled ? 'link' : undefined"
-        :rel="rel"
-        :target="target"
-        :class="resolveLinkClass(route, $route, { isActive, isExactActive })"
-        @click="(e) => !isExternal && navigate(e)"
-      >
-        <slot v-bind="{ isActive: exact ? isExactActive : isActive }" />
-      </a>
-    </NuxtLink>
+      <slot v-bind="{ isActive: exact ? isExactActive : isActive }" />
+    </a>
+  </NuxtLink>
 </template>
 <script setup lang="ts">
     import { isEqual } from 'ohash'

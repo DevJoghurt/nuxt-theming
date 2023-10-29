@@ -5,7 +5,7 @@
       label="Button"
       :loading="loading"
       :disabled="loading"
-      color="purple"
+      button-color="purple"
       size="sm"
     />
     <FsButton
@@ -26,17 +26,4 @@
   const toggleLoading = () => {
     loading.value = !loading.value
   }
-
-  const theme = useTheme('input', {
-    overwrite: {
-      icon: 'text-gray-500 dark:text-gray-400'
-    }
-  })
-
-  theme('input', {
-    gap: 'lg'
-  })
-
-  console.log(theme('preset:loadingIcon'))
-
 </script>

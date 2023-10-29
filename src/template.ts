@@ -3,7 +3,7 @@ import type { NuxtTemplate } from '@nuxt/schema'
 import { resolvePath } from 'mlly'
 import type { ThemeConfig, ModuleOptions } from './types'
 
-  export function writeThemeTypes(config: ThemeConfig[], colors: string[], options: ModuleOptions){
+export function writeThemeTypes(config: ThemeConfig[], colors: string[], options: ModuleOptions){
     const { variations = [], layers = {} } = options
     const { overwriteTypes = false } = layers
 
@@ -37,12 +37,12 @@ export type ThemeConfigs = {
   ${config.length > 0 ? config.map((c) => `${c.name}: ${c.name.charAt(0).toUpperCase() + c.name.slice(1)}Config`).join('\n') : 'empty: \'\''}
 }
 `
-      }
     }
-    addTemplate(template)
   }
+  addTemplate(template)
+}
 
-  export function writeThemeTemplates(config: ThemeConfig[], colors: string[], options: ModuleOptions){
+export function writeThemeTemplates(config: ThemeConfig[], colors: string[], options: ModuleOptions){
     const { variations = [] } = options
     // write config
     for(const c of config){
@@ -75,17 +75,17 @@ export default themes`
     }
     addTemplate(template)
 
-  }
+}
 
-  function _resolveId (id: string) {
-    return resolvePath(id, {
-      url: [
-        // @ts-ignore
-        global.__NUXT_PREPATHS__,
-        import.meta.url,
-        process.cwd(),
-        // @ts-ignore
-        global.__NUXT_PATHS__
-      ]
-    })
-  }
+function _resolveId (id: string) {
+  return resolvePath(id, {
+    url: [
+      // @ts-ignore
+      global.__NUXT_PREPATHS__,
+      import.meta.url,
+      process.cwd(),
+      // @ts-ignore
+      global.__NUXT_PATHS__
+    ]
+  })
+}

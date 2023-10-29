@@ -23,6 +23,7 @@ type ThemeImport = {
 
 export type Safelist = {
     component: string | false
+    safelistByProp: boolean | string | undefined
     extractor: string
     classes: string[]
     values: string[]
@@ -43,6 +44,7 @@ export type ThemeDir = {
 
 type ComponentSafelist = {
     classes: string[]
+    safelistByProp: boolean | string | undefined
     extractor: string
 }
 export type ComponentsSafelist =  Record<string, ComponentSafelist[]>
@@ -62,7 +64,7 @@ type LayersOptions = {
 
 type SafelistExtractor = {
     component?: string
-    safelistByProp?: boolean
+    safelistByProp?: boolean | string
     values?: string[]
 }
 

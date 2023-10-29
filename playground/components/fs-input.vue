@@ -1,57 +1,71 @@
 <template>
-    <div :class="theme('wrapper', {}, $attrs.class)">
-      <input
-        ref="input"
-        :name="name || fieldContext?.name"
-        :value="modelValue || fieldContext?.value.value"
-        :type="type"
-        :required="required"
-        :placeholder="placeholder"
-        :disabled="disabled || loading"
-        :class="theme('input',{
-          size: size,
-          rounded: rounded,
-          padding: padded ? size : 'none',
-          leadingPadding: (isLeading || $slots.leading) ? size : 'none',
-          trailingPadding: (isTrailing || $slots.trailing) ? size : 'none',
-          errorInput: transformBoolean(!fieldContext?.valid.value || false)
-        }, props.inputClass)"
-        v-bind="omit($attrs, ['class'])"
-        @input="onInput"
-        @blur="onBlur"
+  <div :class="theme('wrapper', {}, $attrs.class)">
+    <input
+      ref="input"
+      :name="name || fieldContext?.name"
+      :value="modelValue || fieldContext?.value.value"
+      :type="type"
+      :required="required"
+      :placeholder="placeholder"
+      :disabled="disabled || loading"
+      :class="theme('input',{
+        size: size,
+        rounded: rounded,
+        padding: padded ? size : 'none',
+        leadingPadding: (isLeading || $slots.leading) ? size : 'none',
+        trailingPadding: (isTrailing || $slots.trailing) ? size : 'none',
+        errorInput: transformBoolean(!fieldContext?.valid.value || false)
+      }, props.inputClass)"
+      v-bind="omit($attrs, ['class'])"
+      @input="onInput"
+      @blur="onBlur"
+    >
+    <slot />
+  
+    <span 
+      v-if="(isLeading && leadingIconName) || $slots.leading" 
+      :class="theme('wrapperIcon',{
+        leadingPaddingIcon: size
+      })"
+    >
+      <slot
+        name="leading"
+        :disabled="disabled"
+        :loading="loading"
       >
-      <slot />
+        <FsIcon 
+          :name="leadingIconName" 
+          :class="theme('icon',{
+            iconSize: size,
+            loading: loading ? 'true' : 'false',
+            errorIcon: transformBoolean(!fieldContext?.valid.value || false)
+          })"
+        />
+      </slot>
+    </span>
   
-      <span 
-        v-if="(isLeading && leadingIconName) || $slots.leading" 
-        :class="theme('wrapperIcon',{
-          leadingPaddingIcon: size
-        })">
-        <slot name="leading" :disabled="disabled" :loading="loading">
-          <FsIcon 
-            :name="leadingIconName" 
-            :class="theme('icon',{
-              iconSize: size,
-              loading: loading ? 'true' : 'false',
-              errorIcon: transformBoolean(!fieldContext?.valid.value || false)
-            })" />
-        </slot>
-      </span>
-  
-      <span 
-        v-if="(isTrailing && trailingIconName) || $slots.trailing" 
-        :class="theme('wrapperIcon',{
-          trailingPaddingIcon: size  
-        })">
-        <slot name="trailing" :disabled="disabled" :loading="loading">
-          <FsIcon :name="trailingIconName" :class="theme('icon',{
-              iconSize: size,
-              loading: loading && !isLeading ? 'true' : 'false',
-            })" />
-        </slot>
-      </span>
-    </div>
-  </template>
+    <span 
+      v-if="(isTrailing && trailingIconName) || $slots.trailing" 
+      :class="theme('wrapperIcon',{
+        trailingPaddingIcon: size  
+      })"
+    >
+      <slot
+        name="trailing"
+        :disabled="disabled"
+        :loading="loading"
+      >
+        <FsIcon
+          :name="trailingIconName"
+          :class="theme('icon',{
+            iconSize: size,
+            loading: loading && !isLeading ? 'true' : 'false',
+          })"
+        />
+      </slot>
+    </span>
+  </div>
+</template>
   <script setup lang="ts">
     import { createTheme, inputTheme, type PropType, computed, inject, type Ref } from '#imports'
     import { omit } from '../utils/omit'

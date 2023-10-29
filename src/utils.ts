@@ -1,4 +1,18 @@
-export function convertComponentName(name: string) {
+/**
+ * 
+ * A prop name in vue can be 'colorChip' or 'color-chip'.
+ * This function converts the prop name to the other format and returns both
+ * 
+ * */
+export function convertPropName(name: string) : [string, string] {
+  const camelCase = name.replace(/-([a-z])/g, (match, letter) => letter.toUpperCase());
+  const kebabCase = name.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+
+  return [camelCase, kebabCase];
+}
+
+
+export function convertComponentName(name: string) : [string, string] {
     const kebabCase = name
         .replace(/([a-z])([A-Z])/g, '$1-$2') // Convert camelCase to kebab-case
         .replace(/\s+/g, '-') // Replace spaces with hyphens

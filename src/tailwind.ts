@@ -1,6 +1,7 @@
 // @ts-ignore
 import { defaultExtractor as createDefaultExtractor } from 'tailwindcss/lib/lib/defaultExtractor.js'
 import { installModule } from '@nuxt/kit'
+import { convertPropName  } from './utils'
 import type { Nuxt } from '@nuxt/schema'
 import type { ComponentsSafelist, SafelistConfig } from './types'
 
@@ -22,13 +23,16 @@ const customSafelistExtractor = (content: string, components: string[], componen
         if(typeof safelist.safelistByProp === 'string'){
           safelistProp = safelist.safelistByProp
         }
-        const regex = new RegExp(`<([A-Za-z][A-Za-z0-9]*(?:-[A-Za-z][A-Za-z0-9]*)*)\\s+(?![^>]*:${safelistProp}\\b)[^>]*\\b${safelistProp}=["']([^"']+)["'][^>]*>`, 'gs')
-        const matches = content.matchAll(regex)
-        for (const match of matches) {
-          const [, extractedComponent, extractedValue] = match
-          if(matchedComponents.includes(extractedComponent) && extractedComponent === component && extractedValue){
-            const safelistClasses = safelist.classes.map((classEl) => classEl.replace(new RegExp(`{${safelist.extractor}}`, 'g'),extractedValue))
-            classes = [...new Set([...classes, ...safelistClasses ])]
+        const vueSafelistProps = convertPropName(safelistProp)
+        for(const vueSafelistProp of vueSafelistProps){
+          const regex = new RegExp(`<([A-Za-z][A-Za-z0-9]*(?:-[A-Za-z][A-Za-z0-9]*)*)\\s+(?![^>]*:${vueSafelistProp}\\b)[^>]*\\b${vueSafelistProp}=["']([^"']+)["'][^>]*>`, 'gs')
+          const matches = content.matchAll(regex)
+          for (const match of matches) {
+            const [, extractedComponent, extractedValue] = match
+            if(matchedComponents.includes(extractedComponent) && extractedComponent === component && extractedValue){
+              const safelistClasses = safelist.classes.map((classEl) => classEl.replace(new RegExp(`{${safelist.extractor}}`, 'g'),extractedValue))
+              classes = [...new Set([...classes, ...safelistClasses ])]
+            }
           }
         }
       }
